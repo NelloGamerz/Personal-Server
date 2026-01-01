@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: Personal-Server
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/personal_db
+
+server:
+  port: 9245
+
+security:
+  jwt:
+    secret: avery-long-secret-formypersonal-server!
+    access-token-expiry: 15m
+    refresh-token-expiry: 30d
+
+logging:
+  level:
+    root: INFO

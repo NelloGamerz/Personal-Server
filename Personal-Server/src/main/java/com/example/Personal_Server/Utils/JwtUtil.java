@@ -19,10 +19,11 @@ public class JwtUtil {
 
     private final long ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000;
 
-    public String generateAccessToken(String userId, String deviceId, boolean biometricVerified) {
+    public String generateAccessToken(String userId, String deviceId, String fingerprint, boolean biometricVerified) {
         return Jwts.builder()
                 .setSubject(userId)
                 .claim("deviceId", deviceId)
+                .claim("fingerprint", fingerprint)
                 .claim("biometricVerified", biometricVerified) 
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRY))

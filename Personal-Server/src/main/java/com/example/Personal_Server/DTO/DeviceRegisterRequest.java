@@ -5,5 +5,7 @@ public record DeviceRegisterRequest(
         String deviceName,
         String deviceModel,
         String deviceType,
-        String deviceFingerprint) {
+        String deviceFingerprint,
+        String fmcToken,
+        String email) {
 }

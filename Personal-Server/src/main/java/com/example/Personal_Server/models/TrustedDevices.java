@@ -19,6 +19,7 @@ public class TrustedDevices {
     @Id
     private String id;
 
+    private String userId;
     private String deviceId;            
     private String deviceName;          
     private String deviceModel;         
@@ -26,7 +27,9 @@ public class TrustedDevices {
     private String deviceFingerprint;   
     private String ipAddress;           
     private String publicKey;
-    private String totpSecret;          
+    private String totpSecret;    
+    private String fmcToken;   
+    private String email;   
 
     private DeviceStatus status;        
 

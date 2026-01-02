@@ -1,6 +1,6 @@
 package com.example.Personal_Server.DTO;
 
-public record DeviceRegisterResponse(
-        String totpString,
+public record DeviceOtpVerifyResponse(
+        String message,
         String status) {
 }

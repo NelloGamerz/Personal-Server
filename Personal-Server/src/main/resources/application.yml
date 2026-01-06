@@ -3,7 +3,9 @@ spring:
     name: Personal-Server
   data:
     mongodb:
-      uri: mongodb://localhost:27017/personal_db
+      uri: mongodb+srv://softwaredev1112_db_user:j5Ss4OSg58U05nen@personalserver.wtmczyv.mongodb.net/?appName=PersonalServer
+      database: Personal-Server
+      auto-index-creation: true
 
 server:
   port: 9245

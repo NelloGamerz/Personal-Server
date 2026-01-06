@@ -1,7 +1,6 @@
 package com.example.Personal_Server.Service;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -115,27 +114,61 @@ public class DeviceService {
         }
     }
 
+    // public String getDeviceStatus(String deviceId) {
+    //     String status = null;
+    //     try {
+    //         status = redisService.get("device:" + deviceId, String.class);
+    //         if (status != null) {
+    //             return status;
+    //         }
+    //         status = deviceRepository.getStatus(deviceId);
+    //         if (status != null) {
+    //             redisService.set(
+    //                     "device:" + deviceId,
+    //                     status,
+    //                     100,
+    //                     TimeUnit.HOURS);
+    //         }
+    //     } catch (Exception ex) {
+    //         log.error("Error fetching device status for deviceId={}", deviceId, ex);
+    //     }
+
+    //     return status;
+    // }
+
     public String getDeviceStatus(String deviceId) {
-        String status = null;
-        try {
-            status = redisService.get("device:" + deviceId, String.class);
-            if (status != null) {
-                return status;
-            }
-            status = deviceRepository.getStatus(deviceId);
-            if (status != null) {
-                redisService.set(
-                        "device:" + deviceId,
-                        status,
-                        100,
-                        TimeUnit.HOURS);
-            }
-        } catch (Exception ex) {
-            log.error("Error fetching device status for deviceId={}", deviceId, ex);
+
+    final String cacheKey = "device:" + deviceId;
+
+    try {
+        // 1. Try Redis first
+        String cachedStatus = redisService.get(cacheKey, String.class);
+        if (cachedStatus != null) {
+            return cachedStatus;
         }
 
-        return status;
+        // 2. Fetch from Mongo
+        DeviceStatus status = deviceRepository.findStatusByDeviceId(deviceId);
+        if (status == null) {
+            return null;
+        }
+
+        // 3. Cache result
+        redisService.set(
+                cacheKey,
+                status.name(),   // enum → String (important)
+                100,
+                TimeUnit.HOURS
+        );
+
+        return status.name();
+
+    } catch (Exception ex) {
+        log.error("Error fetching device status for deviceId={}", deviceId, ex);
+        return null;
     }
+}
+
 
     public DeviceOtpVerifyResponse verefyDeviceOtp(DeviceOtpVerifyRequest request) {
 

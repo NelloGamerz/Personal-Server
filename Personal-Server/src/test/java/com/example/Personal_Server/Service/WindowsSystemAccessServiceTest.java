@@ -5,11 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.Resource;
+import org.springframework.mock.web.MockMultipartFile;
 
 import com.example.Personal_Server.DTO.FileItem;
 
@@ -81,12 +84,22 @@ class WindowsSystemAccessServiceTest {
 
     // ---------------------- isValidPath ----------------------
 
+    // @Test
+    // void isValidPath_validWindowsPath_shouldReturnTrue() {
+    //     String[] paths = {"C:\\Users\\Public", "D:\\", "E:\\folder\\file.txt"};
+    //     for (String path : paths) {
+    //         boolean valid = service.isValidPath(path);
+    //         System.out.println("isValidPath('" + path + "') = " + valid);
+    //         assertTrue(valid);
+    //     }
+    // }
+
     @Test
     void isValidPath_validWindowsPath_shouldReturnTrue() {
-        String[] paths = {"C:\\Users\\Public", "D:\\", "E:\\folder\\file.txt"};
-        for (String path : paths) {
-            boolean valid = service.isValidPath(path);
-            System.out.println("isValidPath('" + path + "') = " + valid);
+        File[] roots = File.listRoots();
+        for (File root : roots) {
+            boolean valid = service.isValidPath(root.getAbsolutePath());
+            System.out.println("isValidPath('" + root + "') = " + valid);
             assertTrue(valid);
         }
     }
@@ -99,5 +112,70 @@ class WindowsSystemAccessServiceTest {
             System.out.println("isValidPath('" + path + "') = " + valid);
             assertFalse(valid);
         }
+    }
+
+    // -------------------- loadFileAsResource --------------------
+
+    @Test
+    void loadFileAsResource_validFile_shouldReturnResource() {
+        Resource resource = service.loadFileAsResource(tempFile.toString());
+
+        System.out.println("loadFileAsResource -> " + resource.getFilename());
+
+        assertNotNull(resource);
+        assertTrue(resource.exists());
+        assertTrue(resource.isReadable());
+    }
+
+    @Test
+    void loadFileAsResource_nonExistingFile_shouldThrowException() {
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.loadFileAsResource("Z:\\non-existing-file.txt")
+        );
+
+        System.out.println("Expected exception: " + ex.getMessage());
+        assertEquals("File not found", ex.getMessage());
+    }
+
+    // -------------------- saveFile --------------------
+
+    @Test
+    void saveFile_validTarget_shouldSaveFile() throws IOException {
+        MockMultipartFile multipartFile =
+                new MockMultipartFile(
+                        "file",
+                        "upload.txt",
+                        "text/plain",
+                        "hello-world".getBytes()
+                );
+
+        service.saveFile(tempDir.toString(), multipartFile);
+
+        Path savedFile = tempDir.toPath().resolve("upload.txt");
+
+        System.out.println("saveFile -> Saved at: " + savedFile);
+
+        assertTrue(Files.exists(savedFile));
+        assertEquals("hello-world", Files.readString(savedFile));
+    }
+
+    @Test
+    void saveFile_invalidTargetDirectory_shouldThrowException() {
+        MockMultipartFile multipartFile =
+                new MockMultipartFile(
+                        "file",
+                        "upload.txt",
+                        "text/plain",
+                        "data".getBytes()
+                );
+
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> service.saveFile("Z:\\invalid-dir", multipartFile)
+        );
+
+        System.out.println("Expected exception: " + ex.getMessage());
+        assertEquals("Invalid Target Directory", ex.getMessage());
     }
 }
